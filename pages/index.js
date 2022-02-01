@@ -74,10 +74,11 @@ export default function PaginaInicial() {
           justifyContent: 'center',
           backgroundColor: appConfig.theme.colors.primary[500],
           backgroundImage:
-            'url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)',
+            'url(https://cutewallpaper.org/21/rick-and-morty-wallpapers-1920x1080/277-Rick-and-Morty-HD-Wallpapers-Background-Images-.png)',
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
-          backgroundBlendMode: 'multiply'
+          backgroundPosition: 'center'
+          // backgroundBlendMode: 'multiply'
         }}
       >
         <Box
@@ -95,7 +96,7 @@ export default function PaginaInicial() {
             padding: '32px',
             margin: '16px',
             boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
-            backgroundColor: appConfig.theme.colors.neutrals[700]
+            backgroundColor: appConfig.theme.colors.neutrals[700] + 'ee'
           }}
         >
           {/* Formulário */}
@@ -111,7 +112,7 @@ export default function PaginaInicial() {
               marginBottom: '32px'
             }}
           >
-            <Titulo tag="h2">Boas vindas de volta!</Titulo>
+            <Titulo tag="h2">Welcome!</Titulo>
             <Text
               variant="body3"
               styleSheet={{
