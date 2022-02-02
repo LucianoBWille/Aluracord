@@ -1,36 +1,7 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components'
 import appConfig from '../config.json'
-
-function GlobalStyle() {
-  return (
-    <style global jsx>{`
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-      body {
-        font-family: 'Open Sans', sans-serif;
-      }
-      /* App fit Height */
-      html,
-      body,
-      #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-      #__next {
-        flex: 1;
-      }
-      #__next > * {
-        flex: 1;
-      }
-      /* ./App fit Height */
-    `}</style>
-  )
-}
+import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 function Titulo(props) {
   const Tag = props.tag || 'h1'
@@ -62,11 +33,13 @@ function Titulo(props) {
 // export default HomePage
 
 export default function PaginaInicial() {
-  const username = 'LucianoBWille'
+  // const username = 'LucianoBWille'
+  const [userId, setUserId] = useState('LucianoBWille')
+  // const [userData, setUserData] = useState({ name: userId })
 
+  const roteamento = useRouter()
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: 'flex',
@@ -102,6 +75,10 @@ export default function PaginaInicial() {
           {/* Formulário */}
           <Box
             as="form"
+            onSubmit={event => {
+              event.preventDefault()
+              roteamento.push('/chat')
+            }}
             styleSheet={{
               display: 'flex',
               flexDirection: 'column',
@@ -133,6 +110,18 @@ export default function PaginaInicial() {
                   backgroundColor: appConfig.theme.colors.neutrals[800]
                 }
               }}
+              value={userId}
+              min={2}
+              onChange={event => {
+                setUserId(event.target.value)
+                // fetch(`https://api.github.com/users/${event.target.value}`, {
+                //   method: 'GET'
+                // }).then(response => {
+                //   response.json().then(function (data) {
+                //     setUserData(data)
+                //   })
+                // })
+              }}
             />
             <Button
               type="submit"
@@ -150,6 +139,9 @@ export default function PaginaInicial() {
 
           {/* Photo Area */}
           <Box
+            as="a"
+            href={`https://github.com/${userId}`}
+            target="_blank"
             styleSheet={{
               display: 'flex',
               flexDirection: 'column',
@@ -167,9 +159,16 @@ export default function PaginaInicial() {
             <Image
               styleSheet={{
                 borderRadius: '50%',
-                marginBottom: '16px'
+                marginBottom: '16px',
+                objectFit: 'cover',
+                height: '160px',
+                width: '160px'
               }}
-              src={`https://github.com/${username}.png`}
+              src={
+                userId.length > 2
+                  ? `https://github.com/${userId}.png`
+                  : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTVl1FYFsRH7ezNbbP8_KL5GHIbud6s1VhRA&usqp=CAU'
+              }
             />
             <Text
               variant="body4"
@@ -180,7 +179,9 @@ export default function PaginaInicial() {
                 borderRadius: '1000px'
               }}
             >
-              {username}
+              {/* {userData.name}
+               */}
+              {userId}
             </Text>
           </Box>
           {/* Photo Area */}
