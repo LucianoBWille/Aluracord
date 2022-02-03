@@ -2,15 +2,55 @@ import { Box, Text, TextField, Image, Button } from '@skynexui/components'
 import React from 'react'
 import appConfig from '../config.json'
 import { createClient } from '@supabase/supabase-js'
+import { useRouter } from 'next/router'
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker'
 
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzgyNjQyNCwiZXhwIjoxOTU5NDAyNDI0fQ.De-4rHn2sbwtjHvojQe-teiz0Tf7sJYcLkIF6dODD2E'
 const SUPABASE_URL = 'https://itoosvzpgbquaxamcxic.supabase.co'
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// function escutaAddMensagensEmTempoReal(adicionaMensagem) {
+//   return supabaseClient
+//     .from('mensagens')
+//     .on('INSERT', response => {
+//       console.log('Escutou ADD: ', response.new)
+//       adicionaMensagem(response.new)
+//     })
+//     .subscribe()
+// }
+
+// function escutaDelMensagensEmTempoReal(removeMensagem) {
+//   return supabaseClient
+//     .from('mensagens')
+//     .on('DELETE', response => {
+//       console.log('Escutou DEL: ', response.old)
+//       removeMensagem(response.old)
+//     })
+//     .subscribe()
+
+function mensagensEmTempoReal(atualizaListaDeMensagens) {
+  const mySubscription = supabaseClient
+    .from('mensagens')
+    .on('*', payload => {
+      // console.log('Change received!', payload)
+      atualizaListaDeMensagens(payload)
+    })
+    .subscribe()
+}
+
 export default function ChatPage() {
+  const roteamento = useRouter()
+  const usuarioLogado = String(roteamento.query.username).toLowerCase()
   const [mensagem, setMensagem] = React.useState('')
-  const [listaDeMensagens, setListaDeMensagens] = React.useState([])
+  const [listaDeMensagens, setListaDeMensagens] = React.useState([
+    // {
+    //   id: 1,
+    //   de: 'lucianobwille',
+    //   texto:
+    //     ':sticker:https://www.alura.com.br/imersao-react-4/assets/figurinhas/Figurinha_1.png'
+    // }
+  ])
 
   React.useEffect(() => {
     supabaseClient
@@ -20,6 +60,47 @@ export default function ChatPage() {
       .then(({ data }) => {
         setListaDeMensagens(data)
       })
+    // const subcritionInsert = escutaAddMensagensEmTempoReal(novaMensagem => {
+    //   console.log('Nova mensagem:', novaMensagem)
+    //   setListaDeMensagens(valorAtualDaLista => {
+    //     return [novaMensagem, ...valorAtualDaLista]
+    //   })
+    // })
+    // const subcritionDelete = escutaDelMensagensEmTempoReal(velhaMensagem => {
+    //   console.log('Velha mensagem:', velhaMensagem)
+    //   setListaDeMensagens(valorAtualDaLista => {
+    //     return valorAtualDaLista.filter(
+    //       mensagem => mensagem.id !== velhaMensagem.id
+    //     )
+    //   })
+    // })
+    const subcrition = mensagensEmTempoReal(payload => {
+      // console.log('Mensagem:', payload)
+      setListaDeMensagens(valorAtualDaLista => {
+        // console.log('valorAtualDaLista', valorAtualDaLista)
+        // console.log('payload.new', payload.new)
+        // console.log('payload.old', payload.old)
+        // console.log('add', [payload.new, ...valorAtualDaLista])
+        // console.log(
+        //   'del',
+        //   valorAtualDaLista.filter(mensagem => mensagem.id !== payload.old.id)
+        // )
+        if (payload.new && Object.keys(payload.new).length !== 0) {
+          return [payload.new, ...valorAtualDaLista]
+        } else {
+          if (payload.old && Object.keys(payload.old).length !== 0) {
+            return valorAtualDaLista.filter(
+              mensagem => mensagem.id !== payload.old.id
+            )
+          }
+        }
+      })
+    })
+    return () => {
+      // subcritionInsert.unsubscribe()
+      // subcritionDelete.unsubscribe()
+      subcrition.unsubscribe()
+    }
   }, [])
 
   /*
@@ -36,7 +117,7 @@ export default function ChatPage() {
   function handleNovaMensagem(novaMensagem) {
     const mensagem = {
       // id: (listaDeMensagens[0] ? listaDeMensagens[0].id || 0 : 0) + 1,
-      de: 'vanessametonini',
+      de: usuarioLogado,
       texto: novaMensagem
     }
 
@@ -44,17 +125,24 @@ export default function ChatPage() {
       .from('mensagens')
       .insert([mensagem])
       .then(({ data }) => {
-        console.log('Criando mensagem:', data)
-        setListaDeMensagens([data[0], ...listaDeMensagens])
+        // console.log('Criando mensagem:', data)
+        // setListaDeMensagens([data[0], ...listaDeMensagens])
       })
 
     setMensagem('')
   }
   function deleteMesage(id) {
     // console.log(listaDeMensagens.filter(mensagem => mensagem.id !== id))
-    setListaDeMensagens([
-      ...listaDeMensagens.filter(mensagem => mensagem.id !== id)
-    ])
+    supabaseClient
+      .from('mensagens')
+      .delete()
+      .eq('id', id)
+      .then(data => {
+        // console.log('Removendo mensagem:', data)
+        // setListaDeMensagens([
+        //   ...listaDeMensagens.filter(mensagem => mensagem.id !== id)
+        // ])
+      })
   }
 
   return (
@@ -101,6 +189,7 @@ export default function ChatPage() {
           <MessageList
             mensagens={listaDeMensagens}
             deleteMesage={deleteMesage}
+            usuarioLogado={usuarioLogado}
           />
           {/* {listaDeMensagens.map((mensagemAtual) => {
                         return (
@@ -139,6 +228,11 @@ export default function ChatPage() {
                 backgroundColor: appConfig.theme.colors.neutrals[800],
                 marginRight: '12px',
                 color: appConfig.theme.colors.neutrals[200]
+              }}
+            />
+            <ButtonSendSticker
+              onStickerClick={sticker => {
+                handleNovaMensagem(`:sticker:${sticker}`)
               }}
             />
             <Button
@@ -185,7 +279,7 @@ function Header() {
 }
 
 function MessageList(props) {
-  console.log(props)
+  // console.log(props)
   return (
     <Box
       tag="ul"
@@ -230,7 +324,7 @@ function MessageList(props) {
                       display: 'inline-block',
                       marginRight: '8px',
                       hover: {
-                        transform: 'scale(4.5) translateX(6px)',
+                        transform: 'scale(3.5) translate(6px) translateY(6px)',
                         border: `1px solid ${appConfig.theme.colors.neutrals[500]}`
                       }
                     }}
@@ -259,20 +353,32 @@ function MessageList(props) {
                     justifyContent: 'space-between'
                   }}
                 >
-                  <div>{mensagem.texto}</div>
-                  <Button
-                    label="X"
-                    onClick={event => {
-                      event.preventDefault()
-                      props.deleteMesage(mensagem.id)
-                    }}
-                    buttonColors={{
-                      contrastColor: appConfig.theme.colors.neutrals['000'],
-                      mainColor: appConfig.theme.colors.neutrals[500],
-                      mainColorLight: appConfig.theme.colors.neutrals[400],
-                      mainColorStrong: appConfig.theme.colors.neutrals[600]
-                    }}
-                  />
+                  <div>
+                    {mensagem.texto.startsWith(':sticker:') ? (
+                      <Image
+                        src={mensagem.texto.replace(':sticker:', '')}
+                        styleSheet={{ maxHeight: '150px', maxWidth: '150px' }}
+                      />
+                    ) : (
+                      mensagem.texto
+                    )}
+                  </div>
+                  {String(mensagem.de).toLowerCase() ===
+                  String(props.usuarioLogado).toLowerCase() ? (
+                    <Button
+                      label="X"
+                      onClick={event => {
+                        event.preventDefault()
+                        props.deleteMesage(mensagem.id)
+                      }}
+                      buttonColors={{
+                        contrastColor: appConfig.theme.colors.neutrals['000'],
+                        mainColor: appConfig.theme.colors.neutrals[500],
+                        mainColorLight: appConfig.theme.colors.neutrals[400],
+                        mainColorStrong: appConfig.theme.colors.neutrals[600]
+                      }}
+                    />
+                  ) : null}
                 </Box>
               </Text>
             )
