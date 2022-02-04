@@ -30,7 +30,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 //     .subscribe()
 
 function mensagensEmTempoReal(atualizaListaDeMensagens) {
-  const mySubscription = supabaseClient
+  return supabaseClient
     .from('mensagens')
     .on('*', payload => {
       // console.log('Change received!', payload)
@@ -60,13 +60,13 @@ export default function ChatPage() {
       .then(({ data }) => {
         setListaDeMensagens(data)
       })
-    // const subcritionInsert = escutaAddMensagensEmTempoReal(novaMensagem => {
+    // const subscritionInsert = escutaAddMensagensEmTempoReal(novaMensagem => {
     //   console.log('Nova mensagem:', novaMensagem)
     //   setListaDeMensagens(valorAtualDaLista => {
     //     return [novaMensagem, ...valorAtualDaLista]
     //   })
     // })
-    // const subcritionDelete = escutaDelMensagensEmTempoReal(velhaMensagem => {
+    // const subscritionDelete = escutaDelMensagensEmTempoReal(velhaMensagem => {
     //   console.log('Velha mensagem:', velhaMensagem)
     //   setListaDeMensagens(valorAtualDaLista => {
     //     return valorAtualDaLista.filter(
@@ -74,7 +74,7 @@ export default function ChatPage() {
     //     )
     //   })
     // })
-    const subcrition = mensagensEmTempoReal(payload => {
+    const subscrition = mensagensEmTempoReal(payload => {
       // console.log('Mensagem:', payload)
       setListaDeMensagens(valorAtualDaLista => {
         // console.log('valorAtualDaLista', valorAtualDaLista)
@@ -97,9 +97,9 @@ export default function ChatPage() {
       })
     })
     return () => {
-      // subcritionInsert.unsubscribe()
-      // subcritionDelete.unsubscribe()
-      subcrition.unsubscribe()
+      // subscritionInsert.unsubscribe()
+      // subscritionDelete.unsubscribe()
+      subscrition.unsubscribe()
     }
   }, [])
 
@@ -202,7 +202,8 @@ export default function ChatPage() {
             as="form"
             styleSheet={{
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              gap: '12px'
             }}
           >
             <TextField
@@ -226,7 +227,7 @@ export default function ChatPage() {
                 borderRadius: '5px',
                 padding: '6px 8px',
                 backgroundColor: appConfig.theme.colors.neutrals[800],
-                marginRight: '12px',
+                // marginRight: '12px',
                 color: appConfig.theme.colors.neutrals[200]
               }}
             />
@@ -239,6 +240,9 @@ export default function ChatPage() {
               label="OK"
               onClick={event => {
                 handleNovaMensagem(mensagem)
+              }}
+              styleSheet={{
+                marginBottom: '8px'
               }}
               buttonColors={{
                 contrastColor: appConfig.theme.colors.neutrals['000'],

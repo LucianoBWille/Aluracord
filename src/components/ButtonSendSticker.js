@@ -69,7 +69,8 @@ export function ButtonSendSticker(props) {
               justifyContent: 'space-between',
               flex: 1,
               paddingTop: '16px',
-              overflow: 'scroll'
+              overflow: 'scroll',
+              width: '100%'
             }}
           >
             {appConfig.stickers.map(sticker => (
@@ -86,6 +87,7 @@ export function ButtonSendSticker(props) {
                   width: '50%',
                   borderRadius: '5px',
                   padding: '10px',
+                  alignItems: 'center',
                   focus: {
                     backgroundColor: appConfig.theme.colors.neutrals[600]
                   },
@@ -96,7 +98,7 @@ export function ButtonSendSticker(props) {
               >
                 <Image
                   src={sticker}
-                  styleSheet={{ maxHeight: '80px', maxWidth: '80px' }}
+                  styleSheet={{ maxHeight: '100%', maxWidth: '100%' }}
                 />
               </Text>
             ))}
